@@ -2,16 +2,79 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <title>TODO</title>
-
-  <!-- <link rel="icon" href=""> -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.95em%22%20font-size%3D%2280%22%3E%F0%9F%A4%96%3C%2Ftext%3E%3C%2Fsvg%3E">
+  <title>CAPTCHA</title>
 </head>
 
 <body>
-  <h1>TODO</h1>
+  <div id="captcha-container"></div>
+
+  <script async defer src="https://js.hcaptcha.com/1/api.js?recaptchacompat=off&render=explicit&onload=render"></script>
+  <script>
+    function getQueryParams() {
+      const url = new URL(window.location.href);
+      return url.searchParams;
+    }
+
+    function injectStylesheet(href) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      document.head.appendChild(link);
+    }
+    
+    function handleOriginMessage(data) {
+      console.log('handleOriginMessage:', data);
+      switch (data.action) {
+        case 'execute':
+          return window.hcaptcha && window.hcaptcha.execute();
+        case 'close':
+          return window.hcaptcha && window.hcaptcha.close();
+      }
+    }
+
+    function setup() {
+      const q = getQueryParams();
+
+      // Set a custom value in the title tag
+      const title = q.get('title');
+      if (title) document.title = title;
+
+      // Inject a custom CSS stylesheet
+      const css = q.get('css');
+      if (css) injectStylesheet(css);
+
+      // Handle messages from hCaptcha or the custom origin
+      const origin = q.get('origin');
+      window.addEventListener('message', function (ev) {
+        // Redirect messages from the hCaptcha iframe to the parent frame
+        if (ev.origin === 'https://newassets.hcaptcha.com') {
+          console.log('postMessage:', ev.data);
+          window.parent.postMessage(ev.data, '*');
+        }
+
+        // The custom origin may send 'actions' to control hCaptcha
+        if (origin && ev.origin === origin) handleOriginMessage(ev.data);
+      });
+    }
+
+    function render() {
+      const q = getQueryParams();
+
+      // Render the hCaptcha widget using a custom or test sitekey
+      hcaptcha.render('captcha-container', {
+        hl: q.get('hl'),
+        theme: q.get('theme'),
+        size: q.get('size'),
+        // https://docs.hcaptcha.com/#test-key-set-publisher-account
+        sitekey: q.get('sitekey') || '10000000-ffff-ffff-ffff-000000000001',
+      });
+    }
+
+    setup();
+  </script>
 </body>
 
 </html>
