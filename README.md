@@ -4,7 +4,7 @@ Render CAPTCHA widgets for any `sitekey`.
 
 ## Services Supported
 
-- [hCaptcha](hcaptcha)
+- [hCaptcha](https://iframe-captcha.github.io/captcha/hcaptcha)
 
 ### TODO
 
