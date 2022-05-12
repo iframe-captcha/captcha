@@ -6,6 +6,6 @@ Render CAPTCHA widgets for any `sitekey`.
 
 - [hCaptcha](https://iframe-captcha.github.io/captcha/hcaptcha)
 
-### TODO
+### TODO:
 
 - Document available query string options
