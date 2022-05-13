@@ -27,13 +27,24 @@
     }
 
     function handleOriginMessage(data) {
-      console.log('handleOriginMessage:', data);
       switch (data.action) {
         case 'execute':
           return window.hcaptcha && window.hcaptcha.execute();
         case 'close':
           return window.hcaptcha && window.hcaptcha.close();
       }
+    }
+
+    function postWidgetEvent(widgetId, eventName, data) {
+      window.parent.postMessage({
+        source: 'hcaptcha',
+        label: 'widget',
+        id: widgetId,
+        contents: {
+          event: eventName,
+          data: data,
+        },
+      }, '*');
     }
 
     function setup() {
@@ -52,7 +63,6 @@
       window.addEventListener('message', function (ev) {
         // Redirect messages from the hCaptcha iframe to the parent frame
         if (ev.origin === 'https://newassets.hcaptcha.com') {
-          console.log('postMessage:', ev.data);
           window.parent.postMessage(ev.data, '*');
         }
 
@@ -62,16 +72,38 @@
     }
 
     function render() {
-      const q = getQueryParams();
+      let widgetId = null;
 
-      // Render the hCaptcha widget using a custom or test sitekey
-      hcaptcha.render('captcha-container', {
+      // Widget event names
+      // https://docs.hcaptcha.com/configuration#hcaptcha-container-configuration
+      const eventNames = [
+        'callback',
+        'expired-callback',
+        'chalexpired-callback',
+        'open-callback',
+        'close-callback',
+        'error-callback',
+      ];
+
+      // Setup a callback for each 'callback event'
+      const config = eventNames.reduce(function (obj, name) {
+        obj[name] = function (data) {
+          postWidgetEvent(widgetId, name, data);
+        }
+      }, {})
+
+      // Add the custom config from the URL query string
+      const q = getQueryParams();
+      Object.assign(config, {
         hl: q.get('hl'),
         theme: q.get('theme'),
         size: q.get('size'),
         // https://docs.hcaptcha.com/#test-key-set-publisher-account
         sitekey: q.get('sitekey') || '10000000-ffff-ffff-ffff-000000000001',
       });
+
+      // Render the hCaptcha widget using the custom config
+      widgetId = hcaptcha.render('captcha-container', config);
     }
 
     setup();
