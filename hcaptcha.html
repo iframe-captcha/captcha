@@ -27,6 +27,7 @@
     }
 
     function handleOriginMessage(data) {
+      if (typeof data === 'string') data = JSON.parse(data);
       switch (data.action) {
         case 'execute':
           return window.hcaptcha && window.hcaptcha.execute();
@@ -36,7 +37,7 @@
     }
 
     function postWidgetEvent(widgetId, eventName, data) {
-      window.parent.postMessage({
+      const obj = {
         source: 'hcaptcha',
         label: 'widget',
         id: widgetId,
@@ -44,7 +45,8 @@
           event: eventName,
           data: data,
         },
-      }, '*');
+      };
+      window.parent.postMessage(JSON.stringify(obj), '*');
     }
 
     function setup() {
