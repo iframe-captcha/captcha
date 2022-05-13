@@ -89,7 +89,8 @@
       const config = eventNames.reduce(function (obj, name) {
         obj[name] = function (data) {
           postWidgetEvent(widgetId, name, data);
-        }
+        };
+        return obj;
       }, {})
 
       // Add the custom config from the URL query string
