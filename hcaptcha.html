@@ -64,6 +64,7 @@
 
     function render() {
       let widgetId = null;
+      const container = document.getElementById('captcha-container');
 
       // Widget event names
       // https://docs.hcaptcha.com/configuration#hcaptcha-container-configuration
@@ -95,7 +96,8 @@
       });
 
       // Render the hCaptcha widget using the custom config
-      widgetId = hcaptcha.render('captcha-container', config);
+      widgetId = hcaptcha.render(container, config);
+      container.dataset.widgetId = widgetId;
     }
 
     setup();
