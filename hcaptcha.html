@@ -57,13 +57,12 @@
       if (title) document.title = title;
 
       // Inject the main hCaptcha <script> tag
-      const sitekey = q.get('sitekey');
       let url = new URL('https://js.hcaptcha.com/1/api.js');
       Object.entries({
         render: 'explicit',
         onload: 'render',
         recaptchacompat: 'off',
-        host: sitekey ? sitekey + '.react-native.hcaptcha.com' : null,
+        host: q.get('host'),
       }).forEach(function ([k, v]) {
         if (v) url.searchParams.append(k, v);
       });
