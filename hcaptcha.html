@@ -12,11 +12,18 @@
 <body>
   <div id="captcha-container"></div>
 
-  <script async defer src="https://js.hcaptcha.com/1/api.js?recaptchacompat=off&render=explicit&onload=render&host=10000000-ffff-ffff-ffff-000000000001.react-native.hcaptcha.com"></script>
   <script>
     function getQueryParams() {
       const url = new URL(window.location.href);
       return url.searchParams;
+    }
+
+    function injectScript(src) {
+      const script = document.createElement('script');
+      script.src = src;
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
     }
 
     function handleOriginMessage(data) {
@@ -48,6 +55,19 @@
       // Set a custom value in the title tag
       const title = q.get('title');
       if (title) document.title = title;
+
+      // Inject the main hCaptcha <script> tag
+      const sitekey = q.get('sitekey');
+      let url = new URL('https://js.hcaptcha.com/1/api.js');
+      Object.entries({
+        render: 'explicit',
+        onload: 'render',
+        recaptchacompat: 'off',
+        host: sitekey ? sitekey + '.react-native.hcaptcha.com' : null,
+      }).forEach(function ([k, v]) {
+        if (v) url.searchParams.append(k, v);
+      });
+      injectScript(url.toString());
 
       // Handle messages from hCaptcha or the custom origin
       const origin = q.get('origin');
